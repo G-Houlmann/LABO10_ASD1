@@ -93,7 +93,7 @@ vector<Configuration> GraphConfigs::createAdjacents(Configuration c) {
         adjacentsFromIndex.push_back(createChild(c, indexElemVide, HAUT));
     }
 
-    if (indexElemVide != 0) {
+    if ((indexElemVide%TAILLE_GRILLE) != 0) {
         adjacentsFromIndex.push_back(createChild(c, indexElemVide, GAUCHE));
     }
 
@@ -167,6 +167,8 @@ int main() {
     configs.configInit();
 
     configs.BFSWithParent();
+
+
 
 
     return EXIT_SUCCESS;
