@@ -1,3 +1,11 @@
+/**
+ * Chau Ying KOT, Teo Ferrari, Gildas Houlmann
+ *
+ * Commentaire :    Pour une config 4x4, il faudrai modifier la taille de la grille
+ *
+ *
+ */
+
 #include <cstdlib>
 #include <cstdio>
 #include <list>
@@ -13,7 +21,7 @@ using namespace std;
 const unsigned TAILLE_GRILLE = 3;
 const unsigned ELEM_VIDE = 0;
 
-using Configuration =array<unsigned, TAILLE_GRILLE * TAILLE_GRILLE>;
+using Configuration = array<unsigned, TAILLE_GRILLE * TAILLE_GRILLE>;
 
 Configuration createSolution();
 
@@ -28,27 +36,61 @@ enum Directions {
 class GraphConfigs {
 
 private:
-
+    //Contient la liste des sommets
     Sommets sommetList;
 
+    //Configuration a résoudre
     Configuration configurationInitial;
 
-    bool compareConfig(Configuration, Configuration) const;
+    /**
+     * Compare deux configurations
+     * @param c1
+     * @param c2
+     * @return
+     */
+    bool compareConfig(Configuration c1, Configuration c2) const;
 
+    /**
+     * Retourne une liste de configurations possible selon celui passé en paramètre
+     * @param c
+     * @return un vecteur de configuration voisin
+     */
     vector<Configuration> createAdjacents(Configuration c) const;
 
+    /**
+     * Crée une configuration voisin en indiquand le pièce à deplacer
+     * @param c
+     * @param position position de la case vide
+     * @param direction la position de la pièce à déplacer
+     * @return
+     */
     Configuration
     createChild(Configuration c, unsigned position, unsigned direction) const;
 
+    /**
+     * Checker si la configuration est la solution
+     * @param s
+     * @return
+     */
     bool checkSolution(Configuration s) const;
 
+    /**
+     * Affachage des deplacement de parent en parent depuis la configuration
+     * @param c
+     */
     void affichageSolution(Configuration c) const;
 
 
 public:
 
+    /**
+     * Crée la liste des voisins en fesait un parcour en largeur
+     */
     void BFSWithParent();
 
+    /**
+     * stocke la configuration donnée
+     */
     void configInit();
 
 };
@@ -66,24 +108,28 @@ void GraphConfigs::configInit() {
 }
 
 vector<Configuration> GraphConfigs::createAdjacents(Configuration c) const {
-    auto itElemVide = find(c.begin(), c.end(),
-                           ELEM_VIDE); // trouve position vide ptr
-    size_t indexElemVide = distance(c.begin(), itElemVide);
+    // Trouve l'indice de la position vide
+    auto itElemVide = find(c.begin(), c.end(), ELEM_VIDE);
+    size_t indexElemVide = (size_t) distance(c.begin(), itElemVide);
 
     vector<Configuration> adjacentsFromIndex;
 
+    //La position vide ne se trouve pas sur la dernière ligne
     if (indexElemVide < TAILLE_GRILLE * (TAILLE_GRILLE - 1)) {
         adjacentsFromIndex.push_back(createChild(c, indexElemVide, BAS));
     }
 
+    //La position vide ne se trouve pas sur la dernière colonne
     if (indexElemVide % TAILLE_GRILLE != (TAILLE_GRILLE - 1)) {
         adjacentsFromIndex.push_back(createChild(c, indexElemVide, DROITE));
     }
 
+    //La position vide ne se trouve pas sur la première ligne
     if (indexElemVide > (TAILLE_GRILLE - 1)) {
         adjacentsFromIndex.push_back(createChild(c, indexElemVide, HAUT));
     }
 
+    //La position vide ne se trouve pas sur la première colonne
     if ((indexElemVide % TAILLE_GRILLE) != 0) {
         adjacentsFromIndex.push_back(createChild(c, indexElemVide, GAUCHE));
     }
@@ -99,25 +145,28 @@ void GraphConfigs::BFSWithParent() {
     vector<Configuration> adjacentsFromIndex;
 
     Configuration temp;
+
     while (queue.empty() == false) {
         temp = queue.front();
         queue.pop();
+        // crée la liste des mouvements possible
         adjacentsFromIndex = createAdjacents(temp);
         for (size_t i = 0; i < adjacentsFromIndex.size(); ++i) {
+            //Si la confige crée n'est pas déjà marqué
             if (sommetList.find(adjacentsFromIndex.at(i)) == sommetList.end()) {
+
                 sommetList.insert(make_pair(adjacentsFromIndex.at(i), temp));
                 queue.push(adjacentsFromIndex.at(i));
+
                 if (checkSolution(adjacentsFromIndex.at(i))) {
+                    cout << "Solution : ";
                     affichageSolution(adjacentsFromIndex.at(i));
                     return;
                 }
             }
         }
-        //create childrend and push if not in map
-        //sommetList inseter makepair(nouveau, temp)
-        // if check ok break return
     }
-
+    cout << "Pas de solution" << endl;
 }
 
 Configuration GraphConfigs::createChild(Configuration c, unsigned position,
@@ -130,12 +179,12 @@ Configuration GraphConfigs::createChild(Configuration c, unsigned position,
 void GraphConfigs::affichageSolution(Configuration c) const {
 
     Configuration parent = (*sommetList.find(c)).second;
-    if (compareConfig(c, parent) == false) {
+    while (compareConfig(c, parent) == false) {
         cout << distance(parent.begin(),
                          find(parent.begin(), parent.end(), ELEM_VIDE))
              << " ";
-        affichageSolution(parent);
-
+        c = parent;
+        parent = (*sommetList.find(c)).second;
     }
 }
 
@@ -151,6 +200,10 @@ bool GraphConfigs::compareConfig(Configuration c1, Configuration c2) const {
     return true;
 }
 
+/**
+ * Crée la configuration solution pour la taille de la grille
+ * @return
+ */
 Configuration createSolution() {
     Configuration temp;
     for (size_t i = 0; i < TAILLE_GRILLE * TAILLE_GRILLE; ++i) {
