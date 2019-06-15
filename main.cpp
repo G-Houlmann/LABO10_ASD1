@@ -12,55 +12,46 @@ using namespace std;
 
 const unsigned TAILLE_GRILLE = 3;
 const unsigned ELEM_VIDE = 0;
-using Index = int;
+
 using Configuration =array<unsigned, TAILLE_GRILLE * TAILLE_GRILLE>;
 
-const Configuration SOLUTION = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+Configuration createSolution();
+
+const Configuration SOLUTION = createSolution();
+
 using Sommets = map<Configuration, Configuration>; // ConfigCourant,configParent
+
 enum Directions {
-    HAUT = -3, DROITE = 1, BAS = 3, GAUCHE = -1
+    HAUT = -TAILLE_GRILLE, DROITE = 1, BAS = TAILLE_GRILLE, GAUCHE = -1
 };
 
 class GraphConfigs {
+
 private:
-    vector<list<Configuration>> adjcendyLists;
+
     Sommets sommetList;
+
     Configuration configurationInitial;
 
     bool compareConfig(Configuration, Configuration) const;
 
-public:
+    vector<Configuration> createAdjacents(Configuration c) const;
 
-
-    vector<Configuration> createAdjacents(Configuration c);
-
-    Configuration createChild(Configuration c, unsigned position, unsigned
-    direction) const;
-
-
-    //const list<Configuration> adjacents(Configuration Configuration) const;
-
-    //void addEdge(Configuration configuration1, Configuration configuration2);
-
-    void BFSWithParent();
+    Configuration
+    createChild(Configuration c, unsigned position, unsigned direction) const;
 
     bool checkSolution(Configuration s) const;
 
+    void affichageSolution(Configuration c) const;
+
+
+public:
+
+    void BFSWithParent();
+
     void configInit();
 
-    void affichageSolution(Configuration c) const;
 };
-
-/*void GraphConfigs::addEdge(Configuration configuration1, Configuration configuration2) {
-    adjcendyLists.at(configuration1).push_back(configuration2);
-    if (configuration1 != configuration2) {
-        adjcendyLists.at(configuration2).push_back(configuration1);
-    }
-}
-
-const list<Index> GraphConfigs::adjacents(Index index) const {
-    return adjcendyLists.at(index);
-}*/
 
 bool GraphConfigs::checkSolution(Configuration s) const {
     return compareConfig(s, configurationInitial);
@@ -74,7 +65,7 @@ void GraphConfigs::configInit() {
     }
 }
 
-vector<Configuration> GraphConfigs::createAdjacents(Configuration c) {
+vector<Configuration> GraphConfigs::createAdjacents(Configuration c) const {
     auto itElemVide = find(c.begin(), c.end(),
                            ELEM_VIDE); // trouve position vide ptr
     size_t indexElemVide = distance(c.begin(), itElemVide);
@@ -93,7 +84,7 @@ vector<Configuration> GraphConfigs::createAdjacents(Configuration c) {
         adjacentsFromIndex.push_back(createChild(c, indexElemVide, HAUT));
     }
 
-    if ((indexElemVide%TAILLE_GRILLE) != 0) {
+    if ((indexElemVide % TAILLE_GRILLE) != 0) {
         adjacentsFromIndex.push_back(createChild(c, indexElemVide, GAUCHE));
     }
 
@@ -160,16 +151,22 @@ bool GraphConfigs::compareConfig(Configuration c1, Configuration c2) const {
     return true;
 }
 
+Configuration createSolution() {
+    Configuration temp;
+    for (size_t i = 0; i < TAILLE_GRILLE * TAILLE_GRILLE; ++i) {
+        temp.at(i) = i;
+    }
+    return temp;
+}
+
 int main() {
 
     GraphConfigs configs;
 
+    cout << "Configuration a resoudre : ";
     configs.configInit();
 
     configs.BFSWithParent();
-
-
-
 
     return EXIT_SUCCESS;
 }
